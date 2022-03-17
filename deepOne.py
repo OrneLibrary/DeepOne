@@ -1,11 +1,13 @@
 import os
 import re
 import math
+import time
 import argparse
 import ipaddress
 
 from pathlib import Path
 from collections import deque
+from tabnanny import verbose
 
 
 parser = argparse.ArgumentParser()
@@ -13,6 +15,7 @@ parser.add_argument('-i', '--input', action='store', dest='inputFileVar', requir
 parser.add_argument('-e', '--exclude', action='store', dest='excludeFileVar', help='Path to exclude file')
 parser.add_argument('-o', '--output', action='store', dest='outputFileVar', default=os.getcwd() + "/output.txt", help='Output file')
 parser.add_argument('-s', '--split', action='store', dest='splitCount', type=int, default=1, help='Number of files to split results into')
+parser.add_argument('-v, --verbose', action='store_true', dest='isVerbose', help='Verbose output')
 args = parser.parse_args()
 
 args.outputFileVar = Path(args.outputFileVar)
@@ -67,11 +70,19 @@ try:
 
         excludeFile.close()
 except:
-    print("Not using an exclude file")
+    print("Warning: Not using an exclude file")
+    time.sleep(2)
 
-
+if args.isVerbose:
+    totalCases = sum(1 for _ in inputFile)
+    currentCase = 1
+    inputFile.seek(0)
+    
 for case in inputFile:
     case = case.rstrip("\n")
+    if args.isVerbose:
+        print("Working: " + "(" + str(currentCase) + " of " + str(totalCases) + ")  " + str(case))
+        currentCase+=1
     for i in expand(case):
         if i not in excludeList:
            print(i, file=outputFile)
